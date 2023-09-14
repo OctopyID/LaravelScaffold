@@ -1,5 +1,6 @@
 <?php
 
+use Illuminate\Pipeline\Pipeline;
 use Illuminate\Support\Facades\App;
 
 if (! function_exists('path_to_class')) {
@@ -17,5 +18,29 @@ if (! function_exists('path_to_class')) {
 
         // then, convert to valid namespace
         return App::getNamespace() . trim(str_replace('/', '\\', str_replace('.php', '', $file)), '\\');
+    }
+}
+
+if (! function_exists('pipeline')) {
+    /**
+     * @param  mixed          $passable
+     * @param  class-string[] $pipes
+     * @return Pipeline
+     */
+    function pipeline(mixed $passable = null, array $pipes = []) : mixed
+    {
+        $pipe = App::make(Pipeline::class);
+
+        if (! $passable) {
+            return $pipe;
+        }
+
+        $pipe->send($passable);
+
+        if (! empty($pipes)) {
+            return $pipe->through($pipes)->thenReturn();
+        }
+
+        return $pipe;
     }
 }
